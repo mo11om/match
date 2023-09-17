@@ -308,7 +308,7 @@ def main():
         Order('buy', 110, 5, Condition.ROD) ,
 
         
-        Order('sell', ninf, 4, Condition.ROD)
+        Order('sell', 104, 14, Condition.ROD)
 
     ]
 

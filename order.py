@@ -23,7 +23,7 @@ class Order:
         self.timestamp = int(time())  # Current timestamp
         self.condition = condition
         self.market= market
-
+    
     def get_order_id(self):
         return self.order_id
     def __repr__(self):
@@ -36,6 +36,7 @@ class OrderBook:
         self.buy_Cumulative_quantity=SortedDict()
         self.sell_order_book = SortedDict()
         self.sell_Cumulative_quantity=SortedDict()
+     
     def check_fill_or_kill(self ,order:Order )->bool:
         Cumulative_quantity=0
         if order.order_type=="buy":
@@ -56,6 +57,7 @@ class OrderBook:
         else :
             return False
     def update_Cumulative_quantity(self,order:Order,add=True,partial=False,partnum:int=0 ):  
+        
         if order.order_type=="buy":
             if add:
                 if order.price not in self.buy_Cumulative_quantity:
@@ -65,7 +67,10 @@ class OrderBook:
             else :
                
                 if partial:
+                    print("Update_part",self.buy_Cumulative_quantity)
                     self.buy_Cumulative_quantity[order.price]-=partnum
+                    print("Update_part",self.buy_Cumulative_quantity)
+
                 else:
                     self.buy_Cumulative_quantity[order.price]-=order.quantity
                  
@@ -82,6 +87,41 @@ class OrderBook:
                     self.sell_Cumulative_quantity[order.price]-=partnum
                 else:
                     self.sell_Cumulative_quantity[order.price]-=order.quantity
+    def time_match(self,order_list:list,order:Order):
+       
+        index=0 
+
+        for buy_order in order_list:
+              
+            if order.quantity == 0:
+                break
+
+            if buy_order.quantity <= order.quantity:
+                # Full match
+                print(f"Trade executed FULL (ROD): {buy_order.quantity} at price {buy_order.price} to order_id={order.order_id}")
+                order.quantity -= buy_order.quantity
+                
+
+                self.update_Cumulative_quantity( buy_order,False) # Remove the first order in the list
+                index = index+1
+ 
+
+            else:
+                # Partial match
+             
+                print(f"Trade executed PART (ROD): {order.quantity} at price {buy_order.price} to order_id={order.order_id}")
+                buy_order.quantity -= order.quantity
+                self.update_Cumulative_quantity( buy_order,add=False,partial= True, partnum=  order.quantity)
+                order.quantity = 0
+            
+            
+        if index == len(order_list):
+            order_list.clear()
+            
+        else:
+            for _ in range(index):
+                    order_list.pop(0)
+        
     def process_order(self, order:Order):
          
         if order.order_type == 'buy':
@@ -98,23 +138,7 @@ class OrderBook:
                             break
                         
                         matching_orders = self.sell_order_book[price]
-                        for sell_order in matching_orders:
-                            if order.quantity == 0:
-                                break
-
-                            if sell_order.quantity <= order.quantity:
-                                # Full match
-                                print(f"Trade executed {order.condition}: {sell_order.quantity} at price {sell_order.price} seller_id {sell_order.order_id}  to buyer order_id={order.order_id}")
-                                order.quantity -= sell_order.quantity
-                                self.update_Cumulative_quantity( matching_orders.pop(0),False)  # Remove the first order in the list
-                            else:
-                                # Partial match
-                                print(f"Trade executed {order.condition}: {order.quantity} at price {sell_order.price} seller_id {sell_order.order_id}  to buyer  to order_id={order.order_id}")
-                                sell_order.quantity -= order.quantity
-                                
-                                self.update_Cumulative_quantity( sell_order,add=False,partial= True, partnum= order.quantity)
-                                order.quantity = 0
-                                return  # Cancel remaining IOC order
+                        self.time_match(matching_orders,order)
                 else:
                     print(f"FOK order canceled: order_id={order.order_id}")
                     return    
@@ -128,48 +152,33 @@ class OrderBook:
                         break
                       
                     matching_orders = self.sell_order_book[price]
-                    for sell_order in matching_orders:
-                        if order.quantity == 0:
-                            break
-
-                        if sell_order.quantity <= order.quantity:
-                            # Full match
-                            print(f"Trade executed (IOC): {sell_order.quantity} at price {sell_order.price} seller_id {sell_order.order_id}  to buyer order_id={order.order_id}")
-                            order.quantity -= sell_order.quantity
-                            self.update_Cumulative_quantity( matching_orders.pop(0),False)  # Remove the first order in the list
-                        else:
-                            # Partial match
-                            print(f"Trade executed (IOC): {order.quantity} at price {sell_order.price} seller_id {sell_order.order_id}  to buyer  to order_id={order.order_id}")
-                            sell_order.quantity -= order.quantity
-                             
-                            self.update_Cumulative_quantity( sell_order,add=False,partial= True, partnum= order.quantity)
-                            order.quantity = 0
-                            return  # Cancel remaining IOC order
-                    
+                    self.time_match(matching_orders,order)
             elif order.condition == Condition.ROD:
                 # Regular Order
-                 
+               
                 for price in matching_prices:
-                    print("priceasfd",price)
+                    
                     if order.quantity == 0:
                         break
+                    matching_orders =self.sell_order_book[price]
+                    
+                    self.time_match(matching_orders,order=order)
+    
+                    # for sell_order in matching_orders:
+                    #     if order.quantity == 0:
+                    #         break
 
-                    matching_orders = self.sell_order_book[price]
-                    for sell_order in matching_orders:
-                        if order.quantity == 0:
-                            break
-
-                        if sell_order.quantity <= order.quantity:
-                            # Full match
-                            print(f"Trade executed (ROD): {sell_order.quantity} at price {sell_order.price} to order_id={order.order_id}")
-                            order.quantity -= sell_order.quantity
-                            self.update_Cumulative_quantity( matching_orders.pop(0),False)  # Remove the first order in the list
-                        else:
-                            # Partial match
-                            print(f"Trade executed (ROD): {order.quantity} at price {sell_order.price} to order_id={order.order_id}")
-                            sell_order.quantity -= order.quantity
-                            self.update_Cumulative_quantity( sell_order,add=False,partial= True, partnum= order.quantity)
-                            order.quantity = 0
+                    #     if sell_order.quantity <= order.quantity:
+                    #         # Full match
+                    #         print(f"Trade executed (ROD): {sell_order.quantity} at price {sell_order.price} to order_id={order.order_id}")
+                    #         order.quantity -= sell_order.quantity
+                    #         self.update_Cumulative_quantity( matching_orders.pop(0),False)  # Remove the first order in the list
+                    #     else:
+                    #         # Partial match
+                    #         print(f"Trade executed (ROD): {order.quantity} at price {sell_order.price} to order_id={order.order_id}")
+                    #         sell_order.quantity -= order.quantity
+                    #         self.update_Cumulative_quantity( sell_order,add=False,partial= True, partnum= order.quantity)
+                    #         order.quantity = 0
 
                 if order.quantity > 0:
                     # Add remaining quantity to the buy order book
@@ -192,26 +201,8 @@ class OrderBook:
                             break
 
                         matching_orders = self.buy_order_book[price]
-                        for buy_order in matching_orders:
-                            if order.quantity == 0:
-                                break
-
-                            if buy_order.quantity <= order.quantity:
-                                # Full match
-                                print(f"Trade executed {order.condtion}: {buy_order.quantity} at price {buy_order.price} to order_id={order.order_id}")
-                                order.quantity -= buy_order.quantity
-                                # Remove the first order in the list
-                                self.update_Cumulative_quantity( matching_orders.pop(0),False)
-                            else:
-                                # Partial match
-                                print(f"Trade executed {order.condtion}: {order.quantity} at price {buy_order.price} to order_id={order.order_id}")
-                                buy_order.quantity -= order.quantity
-                            
-                                order.quantity = 0
-                                print("buyer cumu",self.buy_Cumulative_quantity)
-                                self.update_Cumulative_quantity( buy_order,add=False,partial= True, partnum=  order.quantity)
-
-                                return  # Cancel remaining IOC order  
+                        self.time_match(matching_orders,order)
+                         
                 else:
                     print(f"FOK order canceled: order_id={order.order_id}")
                     return     
@@ -223,26 +214,27 @@ class OrderBook:
                         break
 
                     matching_orders = self.buy_order_book[price]
-                    for buy_order in matching_orders:
-                        if order.quantity == 0:
-                            break
+                    self.time_match(matching_orders,order)
+                    # for buy_order in matching_orders:
+                    #     if order.quantity == 0:
+                    #         break
 
-                        if buy_order.quantity <= order.quantity:
-                            # Full match
-                            print(f"Trade executed (IOC): {buy_order.quantity} at price {buy_order.price} to order_id={order.order_id}")
-                            order.quantity -= buy_order.quantity
-                            # Remove the first order in the list
-                            self.update_Cumulative_quantity( matching_orders.pop(0),False)
-                        else:
-                            # Partial match
-                            print(f"Trade executed (IOC): {order.quantity} at price {buy_order.price} to order_id={order.order_id}")
-                            buy_order.quantity -= order.quantity
+                    #     if buy_order.quantity <= order.quantity:
+                    #         # Full match
+                    #         print(f"Trade executed (IOC): {buy_order.quantity} at price {buy_order.price} to order_id={order.order_id}")
+                    #         order.quantity -= buy_order.quantity
+                    #         # Remove the first order in the list
+                    #         self.update_Cumulative_quantity( matching_orders.pop(0),False)
+                    #     else:
+                    #         # Partial match
+                    #         print(f"Trade executed (IOC): {order.quantity} at price {buy_order.price} to order_id={order.order_id}")
+                    #         buy_order.quantity -= order.quantity
                           
-                            order.quantity = 0
-                            print("buyer cumu",self.buy_Cumulative_quantity)
-                            self.update_Cumulative_quantity( buy_order,add=False,partial= True, partnum=  order.quantity)
+                    #         order.quantity = 0
+                    #         print("buyer cumu",self.buy_Cumulative_quantity)
+                    #         self.update_Cumulative_quantity( buy_order,add=False,partial= True, partnum=  order.quantity)
 
-                            return  # Cancel remaining IOC order
+                    #         return  # Cancel remaining IOC order
 
             elif order.condition == Condition.ROD:
                 # Regular Order
@@ -251,21 +243,26 @@ class OrderBook:
                         break
 
                     matching_orders = self.buy_order_book[price]
-                    for buy_order in matching_orders:
-                        if order.quantity == 0:
-                            break
+                    self.time_match(matching_orders,order)
+                    # for buy_order in matching_orders:
+                         
+                    #     print("remain",order.quantity)
+                    #     if order.quantity == 0:
+                    #         break
 
-                        if buy_order.quantity <= order.quantity:
-                            # Full match
-                            print(f"Trade executed (ROD): {buy_order.quantity} at price {buy_order.price} to order_id={order.order_id}")
-                            order.quantity -= buy_order.quantity
-                            self.update_Cumulative_quantity( matching_orders.pop(0),False) # Remove the first order in the list
-                        else:
-                            # Partial match
-                            print(f"Trade executed (ROD): {order.quantity} at price {buy_order.price} to order_id={order.order_id}")
-                            buy_order.quantity -= order.quantity
-                            self.update_Cumulative_quantity( buy_order,add=False,partial= True, partnum=  order.quantity)
-                            order.quantity = 0
+                    #     if buy_order.quantity <= order.quantity:
+                    #         # Full match
+                    #         print(f"Trade executed FULL (ROD): {buy_order.quantity} at price {buy_order.price} to order_id={order.order_id}")
+                    #         order.quantity -= buy_order.quantity
+                    #         self.update_Cumulative_quantity( matching_orders.pop(0),False) # Remove the first order in the list
+                    #         print("remain",order.quantity)
+
+                    #     else:
+                    #         # Partial match
+                    #         print(f"Trade executed PART (ROD): {order.quantity} at price {buy_order.price} to order_id={order.order_id}")
+                    #         buy_order.quantity -= order.quantity
+                    #         self.update_Cumulative_quantity( buy_order,add=False,partial= True, partnum=  order.quantity)
+                    #         order.quantity = 0
 
                 if order.quantity > 0:
                     # Add remaining quantity to the sell order book
@@ -374,9 +371,41 @@ class OrderBook:
             
             return last_price
         if order.order_type=="sell":
-            pass
-             
-         
+            tmp=order.quantity
+            last_price=None
+           
+            print(self.buy_Cumulative_quantity)
+            for key,value in self.buy_Cumulative_quantity.items():
+                print("cumulative",key)
+                if  key< order.price:
+                    continue 
+                tmp=tmp-value
+                  
+                last_price=key 
+                if tmp <= 0:
+                    
+                    break
+            print("last",last_price)
+            
+            return last_price
+    def pro_rata_match(self,matching_orders, total_sell_quantity,order:Order):
+        total_buy_quantity = order.quantity
+        for sell_order in matching_orders:
+            allocation_ratio = min(sell_order.quantity / total_sell_quantity, 1.0)
+
+            trade_quantity = int(total_buy_quantity * allocation_ratio)
+            
+            print ("allocation_ratio",allocation_ratio)
+            print ("trade_quantity",trade_quantity)
+            if trade_quantity > 0:
+                # Partial match
+                print(f"Trade executed (Pro-Rata): {trade_quantity} at price {sell_order.price} seller_id {sell_order.order_id} to buyer order_id={order.order_id}")
+                sell_order.quantity -= trade_quantity
+                order.quantity -= trade_quantity
+                self.update_Cumulative_quantity( sell_order,add=False,partial= True, partnum= trade_quantity)
+        
+        
+     
     def pro_rata_order(self, order:Order):
      
          
@@ -452,49 +481,25 @@ class OrderBook:
 
                     matching_orders = self.sell_order_book[price]
                     if price< last_price:
-                        for sell_order in matching_orders:
-                            if order.quantity == 0:
-                                break
+                        self.time_match(matching_orders,order)
+                        # # for sell_order in matching_orders:
+                        # #     if order.quantity == 0:
+                        # #         break
 
-                            if sell_order.quantity <= order.quantity:
-                                # Full match
-                                print(f"Trade executed (ROD): {sell_order.quantity} at price {sell_order.price} to order_id={order.order_id}")
-                                order.quantity -= sell_order.quantity
-                                self.update_Cumulative_quantity( matching_orders.pop(0),False)  # Remove the first order in the list
+                        # #     if sell_order.quantity <= order.quantity:
+                        # #         # Full match
+                        # #         print(f"Trade executed (ROD): {sell_order.quantity} at price {sell_order.price} to order_id={order.order_id}")
+                        # #         order.quantity -= sell_order.quantity
+                        # #         self.update_Cumulative_quantity( matching_orders.pop(0),False)  # Remove the first order in the list
+                    
                     else:
+                        # pro rata algo
                         total_sell_quantity = self.sell_Cumulative_quantity[last_price]
-                        total_buy_quantity= order.quantity
-                        
-                        for sell_order in matching_orders:
-                            allocation_ratio = min(sell_order.quantity / total_sell_quantity, 1.0)
-
-                            trade_quantity = int(total_buy_quantity * allocation_ratio)
-                            
-                            print ("allocation_ratio",allocation_ratio)
-                            print ("trade_quantity",trade_quantity)
-                            if trade_quantity > 0:
-                                # Partial match
-                                print(f"Trade executed (Pro-Rata): {trade_quantity} at price {sell_order.price} seller_id {sell_order.order_id} to buyer order_id={order.order_id}")
-                                sell_order.quantity -= trade_quantity
-                                order.quantity -= trade_quantity
-                                self.update_Cumulative_quantity( sell_order,add=False,partial= True, partnum= order.quantity)
-                      
+                        # total_buy_quantity= order.quantity
+                        self.pro_rata_match(matching_orders,total_sell_quantity,order)
+                       #remain
                         if order.quantity>0 and self.sell_Cumulative_quantity[last_price] >0:
-                                for sell_order in matching_orders:
-                                    if order.quantity == 0:
-                                        break
-
-                                    if sell_order.quantity <= order.quantity:
-                                        # Full match
-                                        print(f"Trade executed (ROD): {sell_order.quantity} at price {sell_order.price}seller id {sell_order.order_id} to order_id={order.order_id}")
-                                        order.quantity -= sell_order.quantity
-                                        self.update_Cumulative_quantity( matching_orders.pop(0),False)  # Remove the first order in the list
-                                    else:
-                                        # Partial match
-                                        print(f"Trade executed (ROD): {order.quantity} at price {sell_order.price} seller id {sell_order.order_id} to order_id={order.order_id}")
-                                        sell_order.quantity -= order.quantity
-                                        self.update_Cumulative_quantity( sell_order,add=False,partial= True, partnum= order.quantity)
-                                        order.quantity = 0
+                            self.time_match(matching_orders,order)
 
 
                 if order.quantity > 0:
@@ -580,7 +585,7 @@ class OrderBook:
                
                 # print(last_price)
                 # Regular Order
-                self.get_pro_rata_price(order)
+                last_price=self.get_pro_rata_price(order)
                 for price in matching_prices:
                    
                     if order.quantity == 0:
@@ -588,24 +593,21 @@ class OrderBook:
                 
 
                     matching_orders = self.buy_order_book[price]
-                    for buy_order in matching_orders:
-                        if order.quantity == 0:
-                            break
+                    if price< last_price:
+                        self.time_match(matching_orders,order)
+                    else:
+                        total_buy_quantity = self.buy_Cumulative_quantity[last_price]
+                        self.pro_rata_match(matching_orders,total_buy_quantity,order)
+                        
+                        #remain time
+                        if order.quantity>0 and self.buy_Cumulative_quantity[last_price] >0:
+                            self.time_match(matching_orders,order)
 
-                        if buy_order.quantity <= order.quantity:
-                            # Full match
-                            print(f"Trade executed (ROD): {buy_order.quantity} at price {buy_order.price} to order_id={order.order_id}")
-                            order.quantity -= buy_order.quantity
-                            self.update_Cumulative_quantity( matching_orders.pop(0),False) # Remove the first order in the list
-                        else:
-                            # Partial match
-                            print(f"Trade executed (ROD): {order.quantity} at price {buy_order.price} to order_id={order.order_id}")
-                            buy_order.quantity -= order.quantity
-                            self.update_Cumulative_quantity( buy_order,add=False,partial= True, partnum=  order.quantity)
-                            order.quantity = 0
+
 
                 if order.quantity > 0:
                     # Add remaining quantity to the sell order book
+                    
                      
                     if order.price not in self.sell_order_book:
                         self.sell_order_book[order.price] = []
@@ -643,19 +645,20 @@ def main():
         # # Order('sell', 112, 8, Condition.ROD),   # Sell 8 at price 105 (ROD)
         # # Order('sell', 104, 8, Condition.ROD),   # Sell 8 at price 104 (ROD)
          
-          Order('sell', 105, 10, Condition.ROD) ,
-        Order('sell', 110, 3, Condition.ROD) ,
-        Order('sell', 110, 2, Condition.ROD) ,
-        Order('sell', 110, 1, Condition.ROD) ,
+          Order('buy', 105, 10, Condition.ROD) ,
+       
+        Order('buy', 110, 2, Condition.ROD) ,
+       Order('buy', 110, 3, Condition.ROD) ,
         
        
         
-        Order('buy', 112,  14, Condition.ROD),
+        Order('sell', 104,  14, Condition.ROD),
 
 
     ]
 
     for order in orders:
+        
         order_book.pro_rata_order(order)
 
     print("\nFinal Trade Details:")

@@ -13,8 +13,9 @@ class Condition(Enum):
 class Order:
     order_counter = 0  # A class variable to assign unique order IDs
 
-    def __init__(self, order_type, price, quantity, condition,market=False)->int:
+    def __init__(self, user,order_type, price, quantity, condition,market=False)->int:
     
+        self.user=user
         Order.order_counter += 1
         self.order_id = Order.order_counter  # Unique order ID
         self.order_type = order_type  # 'buy' or 'sell'
@@ -23,19 +24,20 @@ class Order:
         self.timestamp = int(time())  # Current timestamp
         self.condition = condition
         self.market= market
+         
     
     def get_order_id(self):
         return self.order_id
     def __repr__(self):
-        return f"Order(order_id={self.order_id}, order_type='{self.order_type}', price={self.price}, quantity={self.quantity}, timestamp={self.timestamp}, condition={self.condition})"
+        return f"Order(user={self.user} order_id={self.order_id}, order_type='{self.order_type}', price={self.price}, quantity={self.quantity}, timestamp={self.timestamp}, condition={self.condition})"
 
 
 class Deal:
     order_counter = 0  # A class variable to assign unique order IDs
 
-    def __init__(self, order_id:int, price, quantity:int)->None:
-    
+    def __init__(self,user, order_id:int, price, quantity:int)->None:
         
+        self.user=user
         self.order_id = order_id  # Unique order ID
          
         self.price = price
@@ -45,7 +47,7 @@ class Deal:
     def get_order_id(self):
         return self.order_id
     def __repr__(self):
-        return f"Order(order_id={self.order_id} , price={self.price}, quantity={self.quantity}, timestamp={self.timestamp} )"
+        return f"Order(user={self.user} ,order_id={self.order_id} , price={self.price}, quantity={self.quantity}, timestamp={self.timestamp} )"
 
 
 class OrderBook:
@@ -107,8 +109,9 @@ class OrderBook:
                     self.sell_Cumulative_quantity[order.price]-=partnum
                 else:
                     self.sell_Cumulative_quantity[order.price]-=order.quantity
-    def add_finish_deal(self,order_id,price,quantity):
-        self.finish_deal.put(Deal(order_id,price,quantity))
+    def add_finish_deal(self,order1:Order,order2:Order,price,quantity):
+        self.finish_deal.put(Deal(order1.user,order1.order_id,price,quantity))
+        self.finish_deal.put(Deal(order2.user,order2.order_id,price,quantity))
     def time_match(self,order_list:list,order:Order):
        
         index=0 
@@ -120,7 +123,9 @@ class OrderBook:
 
             if buy_order.quantity <= order.quantity:
                 # Full match
-                self.add_finish_deal (order_id=buy_order.order_id,price=buy_order.price,quantity=buy_order.quantity)
+                self.add_finish_deal (buy_order,order,price=buy_order.price,quantity=buy_order.quantity)
+               
+                
                 print(f"Trade executed FULL (ROD): {buy_order.quantity} at price {buy_order.price} to order_id={order.order_id}")
                 order.quantity -= buy_order.quantity
                 
@@ -132,7 +137,7 @@ class OrderBook:
             else:
                 # Partial match
    
-                self.add_finish_deal(order_id=order.order_id,price=buy_order.price,quantity=order.quantity)
+                self.add_finish_deal(buy_order,order,price=buy_order.price,quantity=order.quantity)
                 print(f"Trade executed PART (ROD): {order.quantity} at price {buy_order.price} to order_id={order.order_id}")
                 buy_order.quantity -= order.quantity
                 self.update_Cumulative_quantity( buy_order,add=False,partial= True, partnum=  order.quantity)
@@ -423,7 +428,7 @@ class OrderBook:
             print ("trade_quantity",trade_quantity)
             if trade_quantity > 0:
                 # Partial match
-                self.add_finish_deal(order_id=sell_order.order_id,price=sell_order.price,quantity=trade_quantity)
+                self.add_finish_deal(order,sell_order,price=sell_order.price,quantity=trade_quantity)
                 
                 print(f"Trade executed (Pro-Rata): {trade_quantity} at price {sell_order.price} seller_id {sell_order.order_id} to buyer order_id={order.order_id}")
                 sell_order.quantity -= trade_quantity
@@ -657,20 +662,20 @@ def main( ):
         # # Order('sell', 112, 8, Condition.ROD),   # Sell 8 at price 105 (ROD)
         # # Order('sell', 104, 8, Condition.ROD),   # Sell 8 at price 104 (ROD)
          
-          Order('sell', 105, 10, Condition.ROD) ,
+          Order(1,'sell', 105, 10, Condition.ROD) ,
        
-        Order('sell', 110, 20, Condition.ROD) ,
-       Order('sell', 110, 30, Condition.ROD) ,
-       Order('sell', 110, 30, Condition.ROD) ,
+        Order(1,'sell', 110, 20, Condition.ROD) ,
+       Order(1,'sell', 110, 30, Condition.ROD) ,
+       Order(1,'sell', 110, 30, Condition.ROD) ,
         
        
         
-        Order('buy', 118,70, Condition.FOK),
+        Order(2,'buy', 118,70, Condition.FOK),
 
 
     ]
     # Example orders with conditions
-   
+    print("test ",Order(1,'sell', 105, 10, Condition.ROD).get_order_id())
 
     for order in orders:
         order_book. inputOrder(order)
@@ -683,19 +688,12 @@ def main( ):
     order_book.display_order_book()
     # print(orders)
  
-    # print("origin")
+    print("origin")
     # #order_book.display_order_book()
     
-    # while(not order_book.finish_deal.empty()):
-    #     print(order_book.finish_deal.get())
-def newOrder():
-    
-    
-    pass
-def check_income  ():
-    pass
-
-
+    while(not order_book.finish_deal.empty()):
+        print(order_book.finish_deal.get())
+ 
 if __name__ == "__main__":
     
     

@@ -14,7 +14,17 @@ class Order:
     order_counter = 0  # A class variable to assign unique order IDs
 
     def __init__(self, user,order_type, price, quantity, condition,market=False)->int:
-    
+        """
+        Initializes an Order object.
+
+        Args:
+            user (str): User associated with the order.
+            order_type (str): 'buy' or 'sell'.
+            price (float): Price of the order.
+            quantity (int): Quantity of the order.
+            condition (Condition): Condition of the order (FOK, IOC, ROD).
+            market (bool, optional): Whether the order is a market order. Defaults to False.
+        """
         self.user=user
         Order.order_counter += 1
         self.order_id = Order.order_counter  # Unique order ID
@@ -35,11 +45,11 @@ class Order:
 class Deal:
     order_counter = 0  # A class variable to assign unique order IDs
 
-    def __init__(self,user, order_id:int, price, quantity:int)->None:
+    def __init__(self,user, order_id:int,order_type, price, quantity:int)->None:
         
         self.user=user
         self.order_id = order_id  # Unique order ID
-         
+        self.order_type = order_type  # 'buy' or 'sell' 
         self.price = price
         self.quantity = quantity
         self.timestamp = int(time())  # Current timestamp
@@ -47,7 +57,7 @@ class Deal:
     def get_order_id(self):
         return self.order_id
     def __repr__(self):
-        return f"Order(user={self.user} ,order_id={self.order_id} , price={self.price}, quantity={self.quantity}, timestamp={self.timestamp} )"
+        return f"Order(user={self.user} ,order_type={self.order_type},order_id={self.order_id} , price={self.price}, quantity={self.quantity}, timestamp={self.timestamp} )"
 
 
 class OrderBook:
@@ -110,8 +120,9 @@ class OrderBook:
                 else:
                     self.sell_Cumulative_quantity[order.price]-=order.quantity
     def add_finish_deal(self,order1:Order,order2:Order,price,quantity):
-        self.finish_deal.put(Deal(order1.user,order1.order_id,price,quantity))
-        self.finish_deal.put(Deal(order2.user,order2.order_id,price,quantity))
+        if quantity>0:
+            self.finish_deal.put(Deal(order1.user,order1.order_id,order1.order_type,price,quantity))
+            self.finish_deal.put(Deal(order2.user,order2.order_id,order2.order_type,price,quantity))
     def time_match(self,order_list:list,order:Order):
        
         index=0 
@@ -662,21 +673,20 @@ def main( ):
         # # Order('sell', 112, 8, Condition.ROD),   # Sell 8 at price 105 (ROD)
         # # Order('sell', 104, 8, Condition.ROD),   # Sell 8 at price 104 (ROD)
          
-          Order(1,'sell', 105, 10, Condition.ROD) ,
+          Order(1,'buy', 110, 20, Condition.ROD) ,
+          Order(2,'buy', 110, 20, Condition.ROD) ,
        
-        Order(1,'sell', 110, 20, Condition.ROD) ,
-       Order(1,'sell', 110, 30, Condition.ROD) ,
-       Order(1,'sell', 110, 30, Condition.ROD) ,
+        Order(3,'sell', 110, 20, Condition.ROD) ,
+       
+    #    Order(1,'sell', 110, 30, Condition.ROD) ,
         
        
         
-        Order(2,'buy', 118,70, Condition.FOK),
+    #     Order(2,'buy', 118,70, Condition.FOK),
 
 
     ]
-    # Example orders with conditions
-    print("test ",Order(1,'sell', 105, 10, Condition.ROD).get_order_id())
-
+    # Example orders with conditions 
     for order in orders:
         order_book. inputOrder(order)
 

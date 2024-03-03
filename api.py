@@ -12,30 +12,21 @@ def receive_order():
     """
     try:
         order_data = request.get_json()
-
-        id =controller.input_order_from_json(order_data)
-        print(id)
-        # user = order_data.get("user")
-        # order_type = order_data.get("order_type")
-        # price = order_data.get("price")
-        # quantity = order_data.get("quantity")
-        # condition = order_data.get("condition")
-        # market = order_data.get("market", False)  # Default to False if not specified
         
-        # # Create an Order object (you can use your existing Order class)
-        # new_order = {
-        #     "user": user,
-        #     "order_type": order_type,
-        #     "price": price,
-        #     "quantity": quantity,
-        #     "condition": condition,
-        #     "market": market
-        # }
-
-        # orders.append(new_order)
+        id =controller.input_order_from_json(order_data)
+        
+        print(id)
+        
+         
+        # controller.show_deal()
+        
         return jsonify({"message": "Order received successfully!"}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-
+@app.route("/deals", methods=['POST'])
+def get_orders_by_user():
+    data=request.get_json()
+    user = data.get("user")
+    return jsonify(controller.get_deal(user)) 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -14,6 +14,9 @@ all_order=OrderBook()
     
 
 def newOrder(order:Order):
+    """
+    send new order
+    """
      
     all_order. inputOrder(order)
     all_order.dealing()
@@ -23,7 +26,10 @@ def newOrder(order:Order):
         db.insert_deal(deal)
     return order. get_order_id()
 
-
+def get_user_id(user:str):
+    "get user_id"
+    user_id=db.get_user_id(user)
+    return user_id
  
 def input_order_from_json(order_data):
     """
@@ -40,7 +46,7 @@ def input_order_from_json(order_data):
              
             user = order_data.get("user")
             
-            user_id=db.get_user_id(user)
+            user_id= get_user_id(user)
             print("user exist or not",user_id)
             if user_id is None:
                 raise ValueError("User does not exist")
@@ -65,6 +71,9 @@ def input_order_from_json(order_data):
         print(f"Invalid JSON format in file")
         return None
 def get_deal(user):
+    """
+    get result from user name
+    """
     user_id=db.get_user_id(user)
     deals=db.get_deals_by_user(user_id)
     print(deals)

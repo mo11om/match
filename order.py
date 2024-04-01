@@ -13,7 +13,7 @@ class Condition(Enum):
 class Order:
     order_counter = 0  # A class variable to assign unique order IDs
 
-    def __init__(self, user,order_type, price, quantity, condition,market=False)->int:
+    def __init__(self, user:str,order_type:str, price:float, quantity:int, condition:Condition,market=False)->int:
         """
         Initializes an Order object.
 

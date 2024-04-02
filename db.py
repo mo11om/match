@@ -1,7 +1,20 @@
 import sqlite3 
 from order import Deal,Order
+def table_init():
+    """
+    clean deal table
+
+    """
+    conn = sqlite3.connect('order.db')  # Connect to the database
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM deals")  # Execute a query
+    conn.commit()
+    conn.close()  # Close the connection
+    return  
+ 
 def get_orders_from_db():
-    conn = sqlite3.connect('orders.db')  # Connect to the database
+    conn = sqlite3.connect('order.db')  # Connect to the database
     cursor = conn.cursor()
 
     cursor.execute("SELECT * FROM orders")  # Execute a query
@@ -64,7 +77,7 @@ def insert_deal(deal: Deal, db_path='order.db') -> bool:
  
 def get_deals_by_user(user_id, db_path='order.db'):
     """
-    delete and get
+     get deals
     
     """
     
@@ -79,7 +92,6 @@ def get_deals_by_user(user_id, db_path='order.db'):
             WHERE user_id = ?
         """, (user_id,))
         deals = cursor.fetchall()
-        # cursor.execute("DELETE FROM deals WHERE user_id = ?", (user_id,))
         conn.commit()
         conn.close()
         return deals

@@ -6,9 +6,8 @@ import json
  
 
 all_order=OrderBook()
-
-
- 
+#clean deals
+#db.table_init()
     
 
     
@@ -16,6 +15,7 @@ all_order=OrderBook()
 def newOrder(order:Order):
     """
     send new order
+    name is id from get_user_id
     """
      
     all_order. inputOrder(order)
@@ -88,7 +88,16 @@ def show_deal():
     # Print the elements from the list
     for item in queue_list:
         print(item)
-     
+def get_trade_price():
+    print(all_order.trade_price)
+    return all_order.trade_price
+def get_sell_quantity():
+    print("result")
+    print(all_order.buy_order_book)
+    print(all_order.sell_order_book)
+    print(all_order.buy_Cumulative_quantity)
+    print(all_order.sell_Cumulative_quantity)
+    return
 def test():
     
    pass

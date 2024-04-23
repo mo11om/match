@@ -47,7 +47,7 @@ def input_order_from_json(order_data):
             user = order_data.get("user")
             
             user_id= get_user_id(user)
-            print("user exist or not",user_id)
+            
             if user_id is None:
                 raise ValueError("User does not exist")
             
@@ -90,14 +90,17 @@ def show_deal():
         print(item)
 def get_trade_price():
     print(all_order.trade_price)
+    if all_order.trade_price== float("inf"):
+        return None
     return all_order.trade_price
-def get_sell_quantity():
+def get_quantity():
     print("result")
-    print(all_order.buy_order_book)
-    print(all_order.sell_order_book)
+    # print(all_order.buy_order_book)
+    # print(all_order.sell_order_book)
     print(all_order.buy_Cumulative_quantity)
     print(all_order.sell_Cumulative_quantity)
-    return
+    
+    return  {"buy":all_order.buy_Cumulative_quantity,"sell":all_order.sell_Cumulative_quantity}
 def test():
     
    pass

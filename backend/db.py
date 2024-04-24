@@ -1,5 +1,7 @@
-import sqlite3 
+import sqlite3 ,datetime
 from order import Deal,Order
+current_time = datetime.datetime.now()
+cur_time=current_time
 def table_init():
     """
     clean deal table
@@ -63,9 +65,9 @@ def insert_deal(deal: Deal, db_path='order.db') -> bool:
         cursor = conn.cursor()
 
         cursor.execute("""
-            INSERT INTO deals (user_id, order_id, order_type, price, quantity)
-            VALUES (?, ?, ?, ?, ?)
-        """, (deal.user, deal.order_id, deal.order_type, deal.price, deal.quantity))
+            INSERT INTO deals (user_id, order_id, order_type, price, quantity,created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (deal.user, deal.order_id, deal.order_type, deal.price, deal.quantity,datetime.datetime.now()))
 
         conn.commit()
         conn.close()
@@ -80,7 +82,7 @@ def get_deals_by_user(user_id, db_path='order.db'):
      get deals
     
     """
-    
+    print(cur_time)
     try:
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
@@ -89,8 +91,9 @@ def get_deals_by_user(user_id, db_path='order.db'):
         cursor.execute("""
             SELECT order_id, order_type, price, quantity, created_at
             FROM deals
-            WHERE user_id = ?
-        """, (user_id,))
+            WHERE user_id = ? AND created_at >= ?
+                       
+        """, (user_id,cur_time))
         deals = cursor.fetchall()
         conn.commit()
         conn.close()

@@ -52,9 +52,12 @@ def input_order_from_json(order_data):
                 raise ValueError("User does not exist")
             
             order_type = order_data.get("order_type")
+           
             price = order_data.get("price")
             quantity = order_data.get("quantity")
             condition = order_data.get("condition")
+            # if order_type is not  Condition:
+            #     raise ValueError("condition does not have %s",order_type)
             market = order_data.get("market", False)  # Default to False if not specified
 
             try:
@@ -75,8 +78,11 @@ def get_deal(user):
     get result from user name
     """
     user_id=db.get_user_id(user)
+    if user_id is None:
+        raise ValueError("User does not exist")
+            
     deals=db.get_deals_by_user(user_id)
-    print(deals)
+    # print(deals)
     return deals
        
 def show_deal():

@@ -1,0 +1,35 @@
+.container {
+    font-family: sans-serif;
+    margin: 20px;
+  }
+  
+  h1{
+    margin-bottom: 200px;
+
+  }
+  h2 {
+    margin-bottom: 10px;
+  }
+  
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  li {
+    margin-bottom: 5px;
+  }
+  
+  form {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 30px;
+  }
+  
+  label {
+    margin-bottom: 5px;
+  }
+  
+  button{
+    margin-top: 100px;
+  }

@@ -37,11 +37,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import OrderList from './components/Orderlist'; // Import OrderList component
-import OrderForm from './components/OrderForm'; // Import OrderForm component
-import UserDeals from './components/UserDeals'; // Import UserDeals component
+import OrderForm from './components/OrderForm'; // Import OrderForm component 
+ 
 import TradePrice from './components/TradePrice'; // Import TradePrice component
 // import TradeInfo from './components/TradeInfo'; // Import TradePrice component
 import './style.css'; // Import CSS file
+import TransactionList from './components/TransactionList';
 
 const API_URL = 'http://localhost:5000'; // Replace with your Flask app's URL
 
@@ -60,8 +61,8 @@ function App() {
       {/* <OrderList orders={orders} /> */}
       <div style={{ display: 'flex' }}>
         <OrderForm style={{ flex: 1 }} />  {/* Set flex: 1 for OrderForm */}
-        <TradePrice tradePrice={100} style={{ flex: 100  }} /> {/* Set specific width for TradePrice */}
-        
+        <TradePrice   style={{ flex: 100  }} /> {/* Set specific width for TradePrice */}
+        <TransactionList/>
       </div>
 
      </div>

@@ -38,21 +38,23 @@ const TransactionList = ({}) => {
 // ... rest of the component code
 
 return (
-  <div className="transaction-list">
+  <div className="transaction-list table-responsive">
     <h2>Transaction History</h2>
     {isLoading ? (
       <p>Loading transactions...</p>
     ) : error ? (
-      <p>Error fetching transactions: {error.message}</p>
+      <p className="alert alert-danger" role="alert">
+        Error fetching transactions: {error.message}
+      </p>
     ) : (
-      <table>
+      <table className="table table-striped">
         <thead>
           <tr>
             {/* Removed ID column */}
-            <th>Type</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Time</th>
+            <th scope="col">Type</th>
+            <th scope="col">Price</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Time</th>
           </tr>
         </thead>
         <tbody>
@@ -70,7 +72,6 @@ return (
     )}
   </div>
 );
-
 };
 
 export default TransactionList;

@@ -52,7 +52,9 @@ def input_order_from_json(order_data):
                 raise ValueError("User does not exist")
             
             order_type = order_data.get("order_type")
-           
+            if order_type.lower() not in ("buy", "sell"):
+                raise ValueError(f"Invalid order_type: {order_type}. Must be 'buy' or 'sell'")
+
             price = order_data.get("price")
             quantity = order_data.get("quantity")
             condition = order_data.get("condition")
@@ -62,9 +64,9 @@ def input_order_from_json(order_data):
 
             try:
                 condition_enum = Condition[condition]
-            except KeyError:
-                print("Invalid condition in the JSON file. Please use FOK, IOC, or ROD.")
-                return None
+            except  :
+                raise ValueError("Invalid condition in the JSON file. Please use FOK, IOC, or ROD.")
+                 
 
             return newOrder(Order(user=user_id, order_type=order_type, price=price, quantity=quantity, condition=condition_enum, market=market))
     # except FileNotFoundError:

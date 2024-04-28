@@ -67,7 +67,7 @@ def insert_deal(deal: Deal, db_path='order.db') -> bool:
         cursor.execute("""
             INSERT INTO deals (user_id, order_id, order_type, price, quantity,created_at)
             VALUES (?, ?, ?, ?, ?, ?)
-        """, (deal.user, deal.order_id, deal.order_type, deal.price, deal.quantity,datetime.datetime.now()))
+        """, (deal.user, deal.order_id, deal.order_type, deal.price, deal.quantity,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
         conn.commit()
         conn.close()

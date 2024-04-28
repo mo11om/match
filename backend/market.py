@@ -37,7 +37,7 @@ def create_order(user="pro", order_type="buy", price=100, quantity=10, condition
   """
 
   order_data = {
-      "user": user,
+      "user": "JohnDoe",
       "order_type": order_type.lower(),  # Ensure order type is lowercase
       "price": price,
       "quantity": quantity,
@@ -52,7 +52,7 @@ def call_order(order_data):
     headers = {"Content-Type": "application/json"}
 
     # Build the URL
-    url = f"{server_address}/receive_order"
+    url = f"{server_address}/order"
 
     try:
         # Send the POST request with JSON data

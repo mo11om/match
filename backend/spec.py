@@ -10,7 +10,7 @@ ninf=float("-inf")
 # Replace with your actual server address
 server_address = "http://localhost:5000/"
 api_get_price = server_address+"trade_info" 
-
+start= True
 # Safety parameters (replace with appropriate values)
 dip_threshold = -0.02  # Percentage dip threshold to trigger a buy order
 surge_threshold = 0.05  # Percentage surge threshold to trigger a sell order
@@ -43,9 +43,9 @@ def analyze_and_trade():
 
     previous_price = None
 
-    while True:
+    while True and start:
         current_price = get_current_price()
-
+        print(current_price)
         if current_price is not inf:
             if previous_price is not None:
                 # Calculate price change percentage
@@ -55,7 +55,7 @@ def analyze_and_trade():
                     # Create a buy order at a slightly lower price (optional)
                     order_price = current_price * (1 + dip_threshold / 2)
                     print("buy",order_price)
-                    order_data = create_order(order_type="buy", price=order_price, quantity=minimum_order_amount)
+                    order_data = create_order(order_type="sell", price=order_price, quantity=minimum_order_amount)
                     if order_data:
                         call_order(order_data)
 
@@ -63,7 +63,7 @@ def analyze_and_trade():
                     # Create a sell order
                     print("sell",current_price)
 
-                    order_data = create_order(order_type="sell", price=current_price, quantity=minimum_order_amount)
+                    order_data = create_order(order_type="buy", price=current_price, quantity=minimum_order_amount)
                     if order_data:
                         call_order(order_data)
 

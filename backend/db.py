@@ -89,9 +89,10 @@ def get_deals_by_user(user_id, db_path='order.db'):
 
         # Execute the SQL query to retrieve deals for the given user_id
         cursor.execute("""
-            SELECT order_id, order_type, price, quantity, created_at
+            SELECT deal_id, order_type, price, quantity, created_at
             FROM deals
             WHERE user_id = ? AND created_at >= ?
+            ORDER BY created_at DESC
                        
         """, (user_id,cur_time))
         deals = cursor.fetchall()

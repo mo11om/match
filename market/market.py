@@ -42,7 +42,7 @@ def create_order(user="pro", order_type="buy", price=100, quantity=10, condition
       "price": price,
       "quantity": quantity,
       "condition": condition,
-      "market": order_type.lower() != "sell"  # Assuming market order is True for buy orders, False for sell orders
+      "market":  False  #order_type.lower() != "sell"  # Assuming market order is True for buy orders, False for sell orders
   }
 
   return order_data
@@ -53,7 +53,7 @@ def call_order(order_data):
 
     # Build the URL
     url = f"{server_address}/order"
-
+    
     try:
         # Send the POST request with JSON data
         response = requests.post(url, json=order_data, headers=headers)

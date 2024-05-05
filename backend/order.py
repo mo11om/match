@@ -90,6 +90,7 @@ class OrderBook:
             return True
         else :
             return False
+
     def update_Cumulative_quantity(self,order:Order,add=True,partial=False,partnum:int=0 ):  
         
         if order.order_type=="buy":
@@ -100,13 +101,18 @@ class OrderBook:
                     self.buy_Cumulative_quantity[order.price]+=order.quantity
             else :
                
-                if partial:
-                    print("Update_part",self.buy_Cumulative_quantity)
-                    self.buy_Cumulative_quantity[order.price]-=partnum
-                    print("Update_part",self.buy_Cumulative_quantity)
+                if partial: 
+                    if self.buy_Cumulative_quantity[order.price]<partnum:
+                         del self.buy_Cumulative_quantity[order.price]
+
+                    else:
+                        self.buy_Cumulative_quantity[order.price]-=partnum 
+                        if self.buy_Cumulative_quantity[order.price]<=0:
+                            del self.buy_Cumulative_quantity[order.price]
+                            
 
                 else:
-                    self.buy_Cumulative_quantity[order.price]-=order.quantity
+                    del self.buy_Cumulative_quantity[order.price]
                  
                 
                  
@@ -118,9 +124,19 @@ class OrderBook:
                     self.sell_Cumulative_quantity[order.price]+=order.quantity
             else :
                 if partial:
-                    self.sell_Cumulative_quantity[order.price]-=partnum
+                    if  self.sell_Cumulative_quantity[order.price]<partnum:
+                        del self.sell_Cumulative_quantity[order.price]
+                    else:
+                        self.sell_Cumulative_quantity[order.price]-=partnum
+                        if self.sell_Cumulative_quantity[order.price] <=0:
+                            del self.sell_Cumulative_quantity[order.price]
+
                 else:
-                    self.sell_Cumulative_quantity[order.price]-=order.quantity
+                    del self.sell_Cumulative_quantity[order.price] 
+
+
+
+
     def add_finish_deal(self,order1:Order,order2:Order,price,quantity):
         if quantity>0:
             self.finish_deal.put(Deal(order1.user,order1.order_id,order1.order_type,price,quantity))
@@ -289,7 +305,7 @@ class OrderBook:
            
             print(self.sell_Cumulative_quantity)
             for key,value in self.sell_Cumulative_quantity.items():
-                if  key> order.price:
+                if  key> order.price and value >0:
                     break 
                 tmp=tmp-value
                 last_price=key 
@@ -531,19 +547,19 @@ class OrderBook:
         self.inOrder.put(order)
     def dealing(self):
         while(not self.inOrder.empty()):
-            self.pro_rata_order(self.inOrder.get())
+            self.process_order(self.inOrder.get())
         pass              
      
     def display_order_book(self):
         print("\nBuy Order Book:")
-        print (self.buy_order_book)
+        # print (self.buy_order_book)
         print (self.buy_Cumulative_quantity)
         for price, orders in self.buy_order_book.items():
             cumulative_quantity = sum(order.quantity for order in orders)
             print(f"Price: {price}, Cumulative Quantity: {cumulative_quantity}")
 
         print("\nSell Order Book:")
-        print (self.sell_order_book)
+        # print (self.sell_order_book)
         print (self.sell_Cumulative_quantity)
 
         for price, orders in self.sell_order_book.items():

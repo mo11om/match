@@ -31,14 +31,8 @@ const TradePrice = ( ) => {
 
     return () => clearInterval(intervalId); // Cleanup function to stop interval on unmount
   }, []); // Empty dependency array to run only once on mount
-  const slicedBuyPrices = Object.keys(tradeInfo.buy)
-  .filter((buyPrice) => tradeInfo.buy[buyPrice] > 0)
-  .reverse()
-  .slice(0, 5); // Limit to top 5 elements
-  const slicedSellPrices = Object.keys(tradeInfo.sell)
-  .filter((sellPrice) => tradeInfo.sell[sellPrice] > 0)
-   
-  .slice(0, 5); // Limit to top 5 elements
+
+  
   return (
     <div className="trade-price mb-3">
       
@@ -57,12 +51,12 @@ const TradePrice = ( ) => {
             </thead>
             <tbody>
               {/* Loop through buy orders */}
-              {slicedBuyPrices.map((buyPrice) => (
-                  <tr key={buyPrice}>
-                    <td>{buyPrice}</td>
-                    <td>{tradeInfo.buy[buyPrice]}</td>
-                  </tr>
-                ))}
+              {Object.keys(tradeInfo.buy) .filter((buyPrice) => tradeInfo.buy[buyPrice] > 0).reverse().map((buyPrice) => (
+                <tr key={buyPrice}>
+                  <td>{buyPrice}</td>
+                  <td>{tradeInfo.buy[buyPrice]}</td>
+                </tr>
+              ))}
             </tbody>
           </table>
           </div>
@@ -78,8 +72,9 @@ const TradePrice = ( ) => {
             </thead>
             <tbody>
               {/* Loop through sell orders */}
-              {slicedSellPrices.map((sellPrice) => (
+              {Object.keys(tradeInfo.sell).filter((sellPrice) => tradeInfo.sell[sellPrice] > 0) .map((sellPrice) => (
                   <tr key={sellPrice}>
+                    <td>Sell</td>
                     <td>{sellPrice}</td>
                     <td>{tradeInfo.sell[sellPrice]}</td>
                   </tr>

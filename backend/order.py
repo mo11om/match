@@ -87,8 +87,8 @@ class OrderBook:
             # self.fifo_match(matching_orders, order) 
             cumulative_quantity = sum(order.quantity for order in orders)   
             test_quantity-=cumulative_quantity    
-        if test_quantity <= 0:
-                return True
+            if test_quantity <= 0:
+                    return True
         
         return False
         
@@ -115,18 +115,41 @@ class OrderBook:
         #     return False
 
     def update_Cumulative_quantity(self  ):  
-        for price, orders in self.buy_order_book.items():
-            cumulative_quantity = sum(order.quantity for order in orders)
-            if cumulative_quantity:
-                    self.buy_Cumulative_quantity[price]=cumulative_quantity
-        print("buy_Cumulative_quantity",self.buy_Cumulative_quantity)
+        """Calculates and updates the cumulative quantity for both buy and sell orders.
+
+        Updates `self.buy_Cumulative_quantity` and `self.sell_Cumulative_quantity` dictionaries
+        with the cumulative quantity for each price level in the order books. Removes entries from
+        these dictionaries when the cumulative quantity becomes 0.
+        """
+        for order_book, cumulative_quantity_dict in (
+        (self.buy_order_book, self.buy_Cumulative_quantity),
+        (self.sell_order_book, self.sell_Cumulative_quantity),
+        ):
+            for price, orders in order_book.items():
+                total_quantity = sum(order.quantity for order in orders)
+                if total_quantity > 0:
+                    cumulative_quantity_dict[price] = total_quantity
+                else:
+                    cumulative_quantity_dict.pop(price, None)  # Remove entry if quantity is 0
+
+        # for price, orders in self.buy_order_book.items():
+        #     cumulative_quantity = sum(order.quantity for order in orders)
+        #     if cumulative_quantity:
+        #             self.buy_Cumulative_quantity[price]=cumulative_quantity
+        #     else :
+        #         self.buy_Cumulative_quantity[price]=0
+        # print("buy_Cumulative_quantity",self.buy_Cumulative_quantity)
 
         
-        for price, orders in self.sell_order_book.items():
-            cumulative_quantity = sum(order.quantity for order in orders)
-            if cumulative_quantity:
-                self.sell_Cumulative_quantity[price]=cumulative_quantity
-        print("sell_Cumulative_quantity",self.sell_Cumulative_quantity)
+        # for price, orders in self.sell_order_book.items():
+        #     cumulative_quantity = sum(order.quantity for order in orders)
+        #     if cumulative_quantity>0:
+        #         self.sell_Cumulative_quantity[price]=cumulative_quantity
+        #     elif cumulative_quantity==0 :
+        #         self.sell_Cumulative_quantity[price]=0
+            
+
+        # print("sell_Cumulative_quantity",self.sell_Cumulative_quantity)
 
 
  

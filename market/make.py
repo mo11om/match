@@ -95,6 +95,11 @@ def iter_order_threaded(orders_by_price: dict):
         thread = threading.Thread(target=call_order, args=(order_data,))
         thread.start()
         threads.append(thread)
+
+
+    # for thread in threads:
+    #     thread.join()
+
     time.sleep(0.02)
     for price, quantity in orders_by_price.items():
     

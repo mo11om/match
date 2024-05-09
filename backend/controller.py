@@ -102,12 +102,14 @@ def get_trade_price():
         return None
     return all_order.trade_price
 def get_quantity():
-    print("result")
+    # print("result")
     # print(all_order.buy_order_book)
     # print(all_order.sell_order_book)
-    print(all_order.buy_Cumulative_quantity)
-    print(all_order.sell_Cumulative_quantity)
     
+    # print(all_order.buy_Cumulative_quantity)
+    # print(all_order.sell_Cumulative_quantity)
+    # all_order.display_order_book()
+    all_order.update_Cumulative_quantity()
     return  {"buy":all_order.buy_Cumulative_quantity,"sell":all_order.sell_Cumulative_quantity}
 def test():
     

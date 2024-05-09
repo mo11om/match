@@ -67,10 +67,11 @@ def analyze_and_trade(speculative_probability):
 
                 elif price_change >= surge_threshold and price_change > 0:  # Surge condition
                     if potential_reward * speculative_probability >= minimum_reward_threshold:
+                        order_price = current_price * (1 +  minimum_reward_threshold)
                         
                         print("buy",current_price)
 
-                        order_data = create_order(order_type="buy", price=current_price, quantity=minimum_order_amount)
+                        order_data = create_order(order_type="buy", price=order_price, quantity=minimum_order_amount)
 
                         if order_data:
                             call_order(order_data)

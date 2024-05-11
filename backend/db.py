@@ -1,5 +1,5 @@
 import sqlite3 ,datetime
-from order import Deal,Order
+from order import Deal
 current_time = datetime.datetime.now()
 cur_time=current_time
 def table_init():
@@ -14,22 +14,44 @@ def table_init():
     conn.commit()
     conn.close()  # Close the connection
     return  
- 
-def get_orders_from_db():
-    conn = sqlite3.connect('order.db')  # Connect to the database
+def get_all_users(db_path='order.db'):
+  """
+  Retrieves all users as a dictionary from an SQLite database.
+
+  Args:
+      db_path (str): Path to the SQLite database file (default: 'order.db').
+
+  Returns:
+      dict: A dictionary where keys are usernames and values are user IDs.
+  """
+  try:
+    # Connect to the SQLite database
+    conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM orders")  # Execute a query
-    orders = cursor.fetchall()  # Fetch all rows of the query result
+    # Execute the SQL query to fetch all users
+    cursor.execute("SELECT username, user_id FROM users")
+    users = cursor.fetchall()
 
-    conn.close()  # Close the connection
+    # Close the database connection
+    conn.close()
 
-    order_book =order. OrderBook()
-    for order in orders:
-        order_type, price, quantity, condition = order
-        order_book.pro_rata_order(Order(order_type, price, quantity, Condition[condition]))
+    # Create an empty dictionary to store users
+    user_dict = {}
 
-    return order_book
+    # Build the dictionary with username as key and user ID as value
+    for user in users:
+      username, user_id = user
+      user_dict[username] = user_id
+
+    return user_dict
+
+  except sqlite3.Error as e:
+    print(f"Error retrieving users: {e}")
+    return {}
+
+user_dict=get_all_users()
+deal_dict={}
  
 def get_user_id(username_to_search, db_path='order.db'):
     """
@@ -42,66 +64,78 @@ def get_user_id(username_to_search, db_path='order.db'):
     Returns:
         int or None: The user ID if found, or None if no user with the given username exists.
     """
-    try:
-        # Connect to the SQLite database
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-
-        # Execute the SQL query
-        cursor.execute("SELECT user_id FROM users WHERE username = ?", (username_to_search,))
-        user_id = cursor.fetchone()
-
-        # Close the database connection
-        conn.close()
-
-        return user_id[0] if user_id else None
-    except sqlite3.Error as e:
-        print(f"Error retrieving user ID: {e}")
+    if username_to_search in user_dict:
+        return user_dict[username_to_search]
+    else:
         return None
+    # try:
+    #     # Connect to the SQLite database
+    #     conn = sqlite3.connect(db_path)
+    #     cursor = conn.cursor()
+
+    #     # Execute the SQL query
+    #     cursor.execute("SELECT user_id FROM users WHERE username = ?", (username_to_search,))
+    #     user_id = cursor.fetchone()
+
+    #     # Close the database connection
+    #     conn.close()
+
+    #     return user_id[0] if user_id else None
+    # except sqlite3.Error as e:
+    #     print(f"Error retrieving user ID: {e}")
+    #     return None
 
 def insert_deal(deal: Deal, db_path='order.db') -> bool:
-    try:
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
+    if deal.user not in deal_dict:
+        deal_dict[deal.user] = []
 
-        cursor.execute("""
-            INSERT INTO deals (user_id, order_id, order_type, price, quantity,created_at)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, (deal.user, deal.order_id, deal.order_type, deal.price, deal.quantity,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+    deal_dict[deal.user].append(deal)
+    return True
+    # try:
+    #     conn = sqlite3.connect(db_path)
+    #     cursor = conn.cursor()
 
-        conn.commit()
-        conn.close()
+    #     cursor.execute("""
+    #         INSERT INTO deals (user_id, order_id, order_type, price, quantity,created_at)
+    #         VALUES (?, ?, ?, ?, ?, ?)
+    #     """, (deal.user, deal.order_id, deal.order_type, deal.price, deal.quantity,datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
 
-        return True
-    except sqlite3.Error as e:
-        print(f"Error inserting deal: {e}")
-        return False
- 
+    #     conn.commit()
+    #     conn.close()
+
+    #     return True
+    # except sqlite3.Error as e:
+        # print(f"Error inserting deal: {e}")
+        # return False
+
+
+
 def get_deals_by_user(user_id, db_path='order.db'):
     """
      get deals
     
     """
-    print(cur_time)
-    try:
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
+    # print(cur_time)
+    return deal_dict.get(user_id, [])
+    # try:
+    #     conn = sqlite3.connect(db_path)
+    #     cursor = conn.cursor()
 
-        # Execute the SQL query to retrieve deals for the given user_id
-        cursor.execute("""
-            SELECT deal_id, order_type, price, quantity, created_at
-            FROM deals
-            WHERE user_id = ? AND created_at >= ?
-            ORDER BY created_at DESC
+    #     # Execute the SQL query to retrieve deals for the given user_id
+    #     cursor.execute("""
+    #         SELECT deal_id, order_type, price, quantity, created_at
+    #         FROM deals
+    #         WHERE user_id = ? AND created_at >= ?
+    #         ORDER BY created_at DESC
                        
-        """, (user_id,cur_time))
-        deals = cursor.fetchall()
-        conn.commit()
-        conn.close()
-        return deals
-    except sqlite3.Error as e:
-        print(f"Error retrieving deals: {e}")
-        return []
+    #     """, (user_id,cur_time))
+    #     deals = cursor.fetchall()
+    #     conn.commit()
+    #     conn.close()
+    #     return deals
+    # except sqlite3.Error as e:
+    #     print(f"Error retrieving deals: {e}")
+    #     return []
        
 if __name__ == "__main__":
     # Example usage

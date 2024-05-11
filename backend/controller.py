@@ -82,10 +82,11 @@ def get_deal(user):
     user_id=db.get_user_id(user)
     if user_id is None:
         raise ValueError("User does not exist")
-            
+           
     deals=db.get_deals_by_user(user_id)
+    deal_dicts = [deal.__dict__() for deal in deals] 
     # print(deals)
-    return deals
+    return deal_dicts
        
 def show_deal():
     # while(not all_order.finish_deal.empty()):

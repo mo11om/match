@@ -56,6 +56,15 @@ class Deal:
   
     def get_order_id(self):
         return self.order_id
+    def __dict__(self):
+        return {
+            "price": self.price,
+            "quantity": self.quantity,
+            "user": self.user,
+            "order_id": self.order_id,
+            "order_type": self.order_type,
+            "timestamp": self.timestamp,
+        }
     def __repr__(self):
         return f"Order(user={self.user} ,order_type={self.order_type},order_id={self.order_id} , price={self.price}, quantity={self.quantity}, timestamp={self.timestamp} )"
 

@@ -1,39 +1,14 @@
 import time
 import requests
 import random
-from market import call_order, create_order
+from func import call_order, create_order,get_current_price
 inf= float("inf")
 ninf=float("-inf") 
  
 
 
-# Replace with your actual server address
-server_address = "http://localhost:5000/"
-api_get_price = server_address+"trade_info" 
- # Safety parameters (replace with appropriate values)
-dip_threshold = -0.02  # Percentage dip threshold to trigger a buy order
-surge_threshold = 0.05  # Percentage surge threshold to trigger a sell order
-minimum_order_amount = 10  # Minimum quantity for an order
-minimum_reward_threshold=0.01
-def get_current_price():
-    """
-    Fetches the current trade price from the specified API.
+ 
 
-    Returns:
-        float: The current trade price, or None if an error occurs.
-    """
-
-    try:
-        response = requests.get(api_get_price)
-        if response.status_code == 200:
-            data = response.json()
-            return data.get('price')
-        else:
-            print(f"Error getting price: {response.status_code} - {response.text}")
-            return None
-    except requests.exceptions.RequestException as e:
-        print(f"Request failed: {e}")
-        return None
 def analyze_and_trade(speculative_probability):
     """
     Continuously retrieves the current price, analyzes for dips and surges,
@@ -81,14 +56,94 @@ def analyze_and_trade(speculative_probability):
         # Implement a sleep or delay between price checks to avoid overwhelming the API
         # (replace with appropriate delay time in seconds)
         time.sleep(1)
+import threading
+
+class TradingStrategy:
+    def __init__(self, speculative_probability, minimum_order_amount, dip_threshold=-0.02, surge_threshold=0.02, minimum_reward_threshold=0.01):
+         
+        """
+        Initializes the trading strategy with parameters.
+
+        Args:
+            speculative_probability (float): User's confidence in price predictions (0 to 1).
+            minimum_order_amount (int): Minimum quantity for buy/sell orders.
+            dip_threshold (float, optional): Price decrease threshold for buying. Defaults to -0.02 (2%).
+            surge_threshold (float, optional): Price increase threshold for selling. Defaults to 0.02 (2%).
+            minimum_reward_threshold (float, optional): Minimum potential reward for placing orders. Defaults to 0.01 (1%).
+        """
+        self.speculative_probability = speculative_probability
+        self.minimum_order_amount = minimum_order_amount
+        self.dip_threshold = dip_threshold
+        self.surge_threshold = surge_threshold
+        self.minimum_reward_threshold = minimum_reward_threshold
+        self.previous_price = None
+     
+
+            
+
+        # Replace these with your actual functions
+        self.get_current_price = get_current_price
+        self.create_order = create_order
+        self.call_order = call_order
+
+    def start(self):
+        print(f"Speculative Probability: {self.speculative_probability:.2f}")
+        while True:
+            try:
+                current_price = self.get_current_price()
+                print(f"Current Price: {current_price}")
+
+                if current_price is not None and current_price not in (float('inf'), float('-inf')):
+                    if self.previous_price is not None:
+                        price_change = (current_price - self.previous_price) / self.previous_price
+                        potential_reward = abs(price_change)
+
+                        print(f"Price Change: {price_change:.5%}")
+                        print(f"Potential Reward: {potential_reward:.5%}")
+
+                        self.analyze_and_trade(current_price, price_change, potential_reward)
+
+                self.previous_price = current_price
+                time.sleep(0.5)  # Adjust sleep time as needed
+            except KeyboardInterrupt:
+                print("Stopping the analysis...")
+                break
+
+    def analyze_and_trade(self, current_price, price_change, potential_reward):
+        if price_change <= self.dip_threshold and price_change < 0:
+            if potential_reward * self.speculative_probability >= self.minimum_reward_threshold:
+                order_price = int(current_price * (1 + self.dip_threshold / 2))
+                print(f"Sell Order: {order_price:.2f}")
+                # Create order in a separate thread
+                order_thread = threading.Thread(target=self.create_and_call_order, args=("user", "sell", order_price, self.minimum_order_amount))
+                order_thread.start()
+
+        elif price_change >= self.surge_threshold and price_change > 0:
+            if potential_reward * self.speculative_probability >= self.minimum_reward_threshold:
+                order_price = int(current_price * (1 + self.minimum_reward_threshold))
+                print(f"Buy Order: {order_price:.2f}")
+                # Create order in a separate thread
+                
+                order_thread = threading.Thread(target=self.create_and_call_order, args=("user", "buy", order_price, self.minimum_order_amount))
+                order_thread.start()
+
+    def create_and_call_order(self, user, order_type, price, quantity):
+        order_data = self.create_order(user=user, order_type=order_type,price= price, quantity=quantity)
+        print(order_data)
+        if order_data:
+            self.call_order(order_data)
+
+# Example usage (same as before)
  
  
 
 if __name__ == "__main__":
     
+        # Safety parameters (replace with appropriate values)
+    dip_threshold = -0.0001  # Percentage dip threshold to trigger a buy order
+    surge_threshold = 0.0001  # Percentage surge threshold to trigger a sell order
+    minimum_order_amount = 10  # Minimum quantity for an order
+    minimum_reward_threshold=0.00001
+    strategy = TradingStrategy(1, 100,dip_threshold,surge_threshold,minimum_reward_threshold)  # Replace with your parameters
+    strategy.start()
      
-    # analyze_and_trade()
-    speculative_probabilities = [0.2, 0.5, 0.8]  # You can adjust these values
-    for prob in speculative_probabilities:
-      print(f"Running simulation with speculative probability: {prob}")
-      analyze_and_trade(prob)

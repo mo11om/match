@@ -86,6 +86,8 @@ def get_user_id(username_to_search, db_path='order.db'):
     #     return None
 
 def insert_deal(deal: Deal, db_path='order.db') -> bool:
+    if deal.user== get_user_id("market"):
+       return True
     if deal.user not in deal_dict:
         deal_dict[deal.user] = []
 

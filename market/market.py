@@ -1,85 +1,126 @@
-import requests
-import json
-
-# Replace with your actual API endpoint URL
-
-
-# Replace with your actual server address
-server_address = "http://localhost:5000/"
-api_get_price = server_address+"trade_info" 
-# Prepare your order data as a dictionary
-order_data = {
-    "user": "JaneSmith",
-    "order_type": "sell",
-    "price": 105,
-    "quantity": 30,
-    "condition": "IOC",
-    "market": False
-}
-
-
-
-
-
-def create_order(user="pro", order_type="buy", price=100, quantity=10, condition="ROD"):
+import pandas as pd
+import threading
+import time
+from func import create_order,call_order 
+def read_large_csv(filename, chunksize=10000):
   """
-  Creates a dictionary containing order data.
+  Reads a large CSV file in chunks.
 
   Args:
-      user (str): Username for the order.
-      order_type (str): Order type (e.g., "buy", "sell").
-      price (float): Price for the order.
-      quantity (int): Number of items to buy/sell.
-      condition (str, optional): Order condition (e.g., "IOC"). Defaults to "IOC".
+    filename: The name of the CSV file.
+    chunksize: The number of rows to read at a time.
+
+  Yields:
+    A pandas DataFrame for each chunk of the CSV file.
+  """
+  for chunk in pd.read_csv(filename, chunksize=chunksize):
+    yield chunk
+
+ 
+def read_csv_data(filename):
+  """
+  Reads CSV data into a pandas DataFrame.
+
+  Args:
+      filename (str): The name of the CSV file.
 
   Returns:
-      dict: Order data dictionary.
+      pandas.DataFrame: The DataFrame containing the CSV data.
   """
+  data = pd.read_csv(filename)
+  return data
 
-  order_data = {
-      "user": "JohnDoe",
-      "order_type": order_type.lower(),  # Ensure order type is lowercase
-      "price": price,
-      "quantity": quantity,
-      "condition": condition,
-      "market":  False  #order_type.lower() != "sell"  # Assuming market order is True for buy orders, False for sell orders
-  }
+def create_orders_from_data(data):
+  """
+  Creates order dictionaries from CSV data and potentially calls them.
 
-  return order_data
+  Args:
+      data (pandas.DataFrame): The DataFrame containing CSV data.
+      
+  """
+  previous_time=0
+  order_by_price={}
+  for index, row in data.iterrows():
+    # Extract relevant data from each row (assuming time is irrelevant)
+        # Extract time
+    current_time = int(row[0])
 
-def call_order(order_data):
-# Set the headers indicating JSON content
-    headers = {"Content-Type": "application/json"}
+    # Check if new time encountered
+    if current_time != previous_time:
+      print(order_by_price)
+      previous_time=current_time
+      iter_order_threaded(orders_by_price=order_by_price)
+      order_by_price={} 
+    price = int(row[1])
+    quantity = int(row[2])
+    update_orders(orders_by_price=order_by_price,price=price,quantity=quantity)
+      
+def update_orders(orders_by_price, price:int, quantity:int):
+  """
+  Updates the orders_by_price dictionary with a new order or updates an existing one.
 
-    # Build the URL
-    url = f"{server_address}/order"
-    
-    try:
-        # Send the POST request with JSON data
-        response = requests.post(url, json=order_data, headers=headers)
-
-        # Check for successful response (status code 201)
-        if response.status_code == 201:
-            data = response.json()
-            print(f"Order received successfully! Order ID: {data.get('id')}")
-        else:
-            print(f"Error: {response.status_code} - {response.text}")
-
-    except requests.exceptions.RequestException as e:
-        print(f"Request failed: {e}")
-
+  Args:
+      orders_by_price (dict): The dictionary containing orders grouped by price.
+      price (int): The price of the order.
+      quantity (int): The quantity of the order.
+  """
+  # Check if key (price) exists
+  if price in orders_by_price:
+    # Update quantity for existing order
+    orders_by_price[price]+= quantity
+    # orders_by_price[price]["quantity"] += quantity
+  else:
+    # Add new order for the price
+    orders_by_price[price] = quantity#{"price": price, "quantity": quantity}
 
  
+def iter_order(orders_by_price:dict):
+  # Create order data dictionary
+  for price,quantity in orders_by_price.items():
+    order_data = create_order(user="market",order_type="buy", price=price, quantity=quantity)
+    print(f"Order data created: {order_data}")  # Print order data for review
+
+    if order_data :
+      call_order(order_data)
+    # Optionally call the order (uncomment to enable)
+    # call_order(order_data, server_address)    
+
+def iter_order_threaded(orders_by_price: dict):
+    threads = []
+    for price, quantity in orders_by_price.items():
+        order_data = create_order(user="market",order_type="buy", price=price, quantity=quantity)
+        print(f"Order data created: {order_data}")
+
+        # Create and start a thread for each order
+        thread = threading.Thread(target=call_order, args=(order_data,))
+        thread.start()
+        threads.append(thread)
+
+
+    # for thread in threads:
+    #     thread.join()
+
+    time.sleep(0.02)
+    for price, quantity in orders_by_price.items():
+    
+        order_data = create_order(user="market",order_type="sell", price=price, quantity=quantity)  # Use absolute value for sell quantity
+        thread = threading.Thread(target=call_order, args=(order_data,))
+        thread.start()
+        threads.append(thread)
+
+
+    # # Wait for all threads to finish
+    # for thread in threads:
+    #     thread.join()
+
+# Example usage
+
 if __name__ == "__main__":
-    
-    
-    order_data=create_order(order_type="sell")
-    call_order(order_data)
-    order_data=create_order()
-    call_order(order_data)
-    order_data=create_order(order_type="sell",price=110)
-    call_order(order_data)
-    order_data=create_order(price=110)
-    call_order(order_data)
-    
- 
+  #  for chunk in read_large_csv("market.csv"):
+  #       # Process the chunk of data
+  #       print(chunk) 
+  filename = "test.csv"
+  data = read_csv_data(filename) 
+
+  create_orders_from_data(data)
+  

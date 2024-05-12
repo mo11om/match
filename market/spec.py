@@ -1,62 +1,9 @@
 import time
-import requests
-import random
+import threading
 from func import call_order, create_order,get_current_price
 inf= float("inf")
 ninf=float("-inf") 
- 
 
-
- 
-
-def analyze_and_trade(speculative_probability):
-    """
-    Continuously retrieves the current price, analyzes for dips and surges,
-    and creates orders if conditions are met.
-    """
-
-    previous_price = None
-    print(speculative_probability)
-    while True  :
-        current_price = get_current_price()
-        print(current_price)
-        if current_price is not inf and  current_price is not None :
-            if previous_price is not None and  previous_price is not inf:
-                # Calculate price change percentage
-                price_change = (current_price - previous_price) / previous_price
-
-                # Calculate potential reward
-                potential_reward = (current_price - previous_price )/current_price  # Assuming fixed order quantity
-
-                print("price_change",price_change)
-                print("potetntioal rewaord",potential_reward*speculative_probability)
-                if price_change <= dip_threshold and price_change < 0:  # Dip condition
-                     # Consider buying only if potential reward is high enough according to speculation probability
-                    if abs(potential_reward )* speculative_probability >= minimum_reward_threshold:
-                        order_price = current_price * (1 + dip_threshold / 2)
-                        print("sell",order_price)
-                        order_data = create_order(order_type="sell", price=order_price, quantity=minimum_order_amount)
-
-                        if order_data:
-                            call_order(order_data)
-
-                elif price_change >= surge_threshold and price_change > 0:  # Surge condition
-                    if potential_reward * speculative_probability >= minimum_reward_threshold:
-                        order_price = current_price * (1 +  minimum_reward_threshold)
-                        
-                        print("buy",current_price)
-
-                        order_data = create_order(order_type="buy", price=order_price, quantity=minimum_order_amount)
-
-                        if order_data:
-                            call_order(order_data)
-
-            previous_price = current_price
-
-        # Implement a sleep or delay between price checks to avoid overwhelming the API
-        # (replace with appropriate delay time in seconds)
-        time.sleep(1)
-import threading
 
 class TradingStrategy:
     def __init__(self, speculative_probability, minimum_order_amount, dip_threshold=-0.02, surge_threshold=0.02, minimum_reward_threshold=0.01):

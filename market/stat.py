@@ -84,5 +84,5 @@ def calculate_trade_stats(data):
 if __name__ == "__main__":
    
     # Example usage (assuming you have your transaction data in a list named 'deals')
-    stats = calculate_trade_stats( get_deals("user"))
+    stats = calculate_trade_stats( get_deals("mo"))
     print(stats)

@@ -86,7 +86,9 @@ def iter_order(orders_by_price:dict):
     # call_order(order_data, server_address)    
 
 def iter_order_threaded(orders_by_price: dict):
-    threads = []
+    # threads = []
+    time.sleep(0.02)
+
     for price, quantity in orders_by_price.items():
         order_data = create_order(user="market",order_type="buy", price=price, quantity=quantity)
         print(f"Order data created: {order_data}")
@@ -94,19 +96,18 @@ def iter_order_threaded(orders_by_price: dict):
         # Create and start a thread for each order
         thread = threading.Thread(target=call_order, args=(order_data,))
         thread.start()
-        threads.append(thread)
+        # threads.append(thread)
 
 
     # for thread in threads:
     #     thread.join()
 
-    time.sleep(0.02)
     for price, quantity in orders_by_price.items():
     
         order_data = create_order(user="market",order_type="sell", price=price, quantity=quantity)  # Use absolute value for sell quantity
         thread = threading.Thread(target=call_order, args=(order_data,))
         thread.start()
-        threads.append(thread)
+        # threads.append(thread)
 
 
     # # Wait for all threads to finish

@@ -50,6 +50,14 @@ def get_trade_info():
     
     return jsonify({"price":controller.get_trade_price(),
                     "info":controller.get_quantity()}) 
+@app.route("/price", methods=['GET'])
+def get_price():
+    """
+    Get order from names
+    """
+    
+    return jsonify({"price":controller.get_trade_price()}) 
+
 
 
 if __name__ == '__main__':

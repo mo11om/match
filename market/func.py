@@ -6,7 +6,7 @@ import json
 
 # Replace with your actual server address
 server_address = "http://localhost:5000/"
-api_get_price = server_address+"trade_info" 
+api_get_price = server_address+"price" 
 # Prepare your order data as a dictionary
 def get_current_price():
     """

@@ -116,6 +116,14 @@ def iter_order_threaded(orders_by_price: dict):
 
 # Example usage
 
+
+def make_market(filename:str):
+  data = read_csv_data(filename) 
+
+  create_orders_from_data(data)
+  
+
+
 if __name__ == "__main__":
   #  for chunk in read_large_csv("market.csv"):
   #       # Process the chunk of data

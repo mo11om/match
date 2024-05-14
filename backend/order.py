@@ -79,7 +79,16 @@ class OrderBook:
         self.trade_price=inf
         self.finish_deal=Queue()
         self.inOrder=Queue()
-        
+    def reset(self):
+        self.buy_order_book = SortedDict()
+        self.buy_Cumulative_quantity=SortedDict()
+        self.sell_order_book = SortedDict()
+        self.sell_Cumulative_quantity=SortedDict()
+        self.trade_Cumulative_quantity=SortedDict()
+        self.trade_price=inf
+        self.finish_deal=Queue()
+        self.inOrder=Queue()
+            
     def check_fill_or_kill(self ,order:Order )->bool:
         # self.update_Cumulative_quantity()
         matching_prices = self.get_matching_prices(order)

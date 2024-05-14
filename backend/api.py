@@ -45,7 +45,19 @@ def get_orders_by_user():
 @app.route("/trade_info", methods=['GET'])
 def get_trade_info():
     """
-    Get order from names
+    Get trade info 
+    {
+        "info": {
+            "buy": {
+                "20498": 10
+            },
+            "sell": {
+                20498": 10
+            }
+        },
+        "price": 20480
+    }
+
     """
     
     return jsonify({"price":controller.get_trade_price(),
@@ -53,10 +65,21 @@ def get_trade_info():
 @app.route("/price", methods=['GET'])
 def get_price():
     """
-    Get order from names
+    Get trade price
     """
     
     return jsonify({"price":controller.get_trade_price()}) 
+
+@app.route("/reset", methods=['GET'])
+def reset():
+    """
+    Get order from names
+    """
+    try:
+        controller.reset()    
+        return jsonify({"message": "reset successfully!"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 
 

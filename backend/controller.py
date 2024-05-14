@@ -112,6 +112,10 @@ def get_quantity():
     # all_order.display_order_book()
     all_order.update_Cumulative_quantity()
     return  {"buy":all_order.buy_Cumulative_quantity,"sell":all_order.sell_Cumulative_quantity}
+def reset ():
+    all_order.reset()
+    db.deal_dict.clear()
+
 def test():
     
    pass

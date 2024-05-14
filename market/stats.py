@@ -40,7 +40,7 @@ def calculate_trade_stats(data):
           total_quantity: The total number of items bought and sold.
           profit: The total profit earned (positive) or loss (negative).
   """
-  cur_price=get_current_price()
+  # cur_price=get_current_price()
   total_buy_price = 0
   total_sell_price = 0
   total_buy_quantity = 0
@@ -69,13 +69,16 @@ def calculate_trade_stats(data):
   print(total_sell_price)
   print(total_buy_price)
 
-  profit = total_sell_price - total_buy_price  +  cur_price * remain_quantity  
+  profit = total_sell_price - total_buy_price  +  average_buy_price * remain_quantity if remain_quantity <0 else average_sell_price *remain_quantity  
 
   return {
     "average_buy_price": average_buy_price,
     "total_buy_quantity":total_buy_quantity,
-    "total_sell_quantity":total_sell_quantity,
+
+
     "average_sell_price": average_sell_price,
+    "total_sell_quantity":total_sell_quantity,
+    # "cur_price":cur_price,
     "remain_quantity": remain_quantity,
     "profit": profit,
   }

@@ -7,6 +7,7 @@ import json
 # Replace with your actual server address
 server_address = "http://localhost:5000/"
 api_get_price = server_address+"price" 
+api_reset=server_address+"reset"
 # Prepare your order data as a dictionary
 def get_current_price():
     """
@@ -28,6 +29,22 @@ def get_current_price():
         print(f"Request failed: {e}")
         return None
 
+def reset():
+    """
+    reset 
+    """
+
+    try:
+        response = requests.get(api_reset)
+        if response.status_code == 200:
+            
+            return "success"
+        else:
+            print(f"Error getting price: {response.status_code} - {response.text}")
+            return None
+    except requests.exceptions.RequestException as e:
+        print(f"Request failed: {e}")
+        return None
 
 
 

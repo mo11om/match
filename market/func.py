@@ -8,7 +8,32 @@ import json
 server_address = "http://localhost:5000/"
 api_get_price = server_address+"price" 
 api_reset=server_address+"reset"
+api_get_deal=server_address +"deals"
 # Prepare your order data as a dictionary
+def get_deals(user):
+    url = api_get_deal
+
+    # Define the data as a dictionary
+    data = {"user": user}
+
+    # Convert the data dictionary to JSON format
+    json_data = json.dumps(data)
+
+    # Set the headers to specify JSON content type
+    headers = {'Content-type': 'application/json'}
+
+    # Send the POST request with JSON data
+    response = requests.post(url, data=json_data, headers=headers)
+
+    # Check for successful response status code
+    if response.status_code == 200:
+    # Get the response data as JSON
+        response_json = response.json()
+        print(response_json)
+        
+    else:
+        print("Error:", response.status_code)
+    return response_json
 def get_current_price():
     """
     Fetches the current trade price from the specified API.
@@ -89,7 +114,9 @@ def call_order(order_data):
         # Check for successful response (status code 201)
         if response.status_code == 201:
             data = response.json()
-            print(f"Order received successfully! Order ID: {data.get('id')}")
+            id= data.get('id')
+            print(f"Order received successfully! Order ID: {id}")
+            return id
         else:
             print(f"Error: {response.status_code} - {response.text}")
 

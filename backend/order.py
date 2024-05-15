@@ -37,6 +37,7 @@ class Order:
          
     
     def get_order_id(self):
+        # print(self.order_id)
         return self.order_id
     def __repr__(self):
         return f"Order(user={self.user} order_id={self.order_id}, order_type='{self.order_type}', price={self.price}, quantity={self.quantity}, timestamp={self.timestamp}, condition={self.condition})"

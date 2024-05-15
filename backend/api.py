@@ -28,7 +28,7 @@ def receive_order():
          
         # controller.show_deal()
         
-        return jsonify({"message": "Order received successfully!"}), 201
+        return jsonify({"message": "Order received successfully!","id":id}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 

@@ -22,7 +22,7 @@ def newOrder(order:Order):
     all_order.dealing()
     while(not all_order.finish_deal.empty()):
         deal=all_order.finish_deal.get()
-        print(deal)
+        # print(deal)
         db.insert_deal(deal)
     return order. get_order_id()
 

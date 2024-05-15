@@ -1,6 +1,6 @@
 import time
 import threading
-from func import call_order, create_order,get_current_price
+from func import call_order, create_order,get_current_price,get_deals
 inf= float("inf")
 ninf=float("-inf") 
  
@@ -28,14 +28,14 @@ class TradingStrategy:
         self.minimum_reward_threshold = minimum_reward_threshold
         self.previous_price = None
      
-
+        self.order_id=None
             
 
         # Replace these with your actual functions
         self.get_current_price = get_current_price
         self.create_order = create_order
         self.call_order = call_order
-
+        self.get_deals=get_deals
     def start(self):
         print(f"Speculative Probability: {self.speculative_probability:.2f}")
         while True:
@@ -54,7 +54,7 @@ class TradingStrategy:
                         self.analyze_and_trade(current_price, price_change, potential_reward)
 
                 self.previous_price = current_price
-                time.sleep(0.5)  # Adjust sleep time as needed
+                time.sleep(0.001)  # Adjust sleep time as needed
             except KeyboardInterrupt:
                 print("Stopping the analysis...")
                 break
@@ -62,33 +62,57 @@ class TradingStrategy:
     def analyze_and_trade(self, current_price, price_change, potential_reward):
         if   price_change > 0:
             # if potential_reward * self.speculative_probability >= self.minimum_reward_threshold:
-                order_price = int(current_price +1)
-                print(f"Sell Order: {order_price:}")
-                # Create order in a separate thread
-                order_thread = threading.Thread(target=self.create_and_call_order, args=("mo", "sell", order_price, self.minimum_order_amount))
-                order_thread.start() 
                 order_price = int(current_price -2 )
                 print(f"Buy Order: {order_price:.2f}")
                 # Create order in a separate thread
                 
-                order_thread = threading.Thread(target=self.create_and_call_order, args=("mo", "buy", order_price, self.minimum_order_amount))
-                order_thread.start()
+                # order_thread = threading.Thread(target=self.create_and_call_order, args=("mo", "buy", order_price, self.minimum_order_amount))
+                # order_thread.start()
+                self.create_and_call_order("mo", "buy", order_price, self.minimum_order_amount,"IOC")
+         
+                if self.check_order():
+                        
 
-        # elif  price_change > 0:
+
+                    order_price = int(current_price )
+                    print(f"Sell Order: {order_price:}")
+                    # self.create_and_call_order("mo", "sell", order_price, self.minimum_order_amount)
+                    # Create order in a separate thread
+                    order_thread = threading.Thread(target=self.create_and_call_order, args=("mo", "sell", order_price, self.minimum_order_amount,"IOC"))
+                    order_thread.start() 
+                    
+
+        # elif  price_change < 0:
         #     # if potential_reward * self.speculative_probability >= self.minimum_reward_threshold:
-        #         order_price = int(current_price +1 )
-        #         print(f"Buy Order: {order_price:.2f}")
+        #         print(f"Sell Order: {order_price:}")
+        #         order_price = int(current_price +1)
+
         #         # Create order in a separate thread
+        #         order_thread = threading.Thread(target=self.create_and_call_order, args=("mo", "sell", order_price, self.minimum_order_amount))
+        #         order_thread.start() 
+
+                
+                
+        #         print(f"Buy Order: {order_price:}")
+        #         # Create order in a separate thread
+        #         order_price = int(current_price -3)
                 
         #         order_thread = threading.Thread(target=self.create_and_call_order, args=("user", "buy", order_price, self.minimum_order_amount))
         #         order_thread.start()
 
-    def create_and_call_order(self, user, order_type, price, quantity):
+    def check_order(self,user="mo"):
+        # print(self.order_id)
+        deals=get_deals(user)
+        for  deal in deals:
+            if deal["order_id"] == self.order_id :
+                return True
+        return False    
+    def create_and_call_order(self, user, order_type, price, quantity,condition):
         order_data = self.create_order(user=user, order_type=order_type,price= price, quantity=quantity)
-        print(order_data)
+        # print(order_data)
         if order_data:
-            self.call_order(order_data)
-
+            self.order_id=self.call_order(order_data)
+            # print(self.order_id)
 # Example usage (same as before)
  
  

@@ -69,7 +69,7 @@ def calculate_trade_stats(data):
   print(total_sell_price)
   print(total_buy_price)
 
-  profit = total_sell_price - total_buy_price  +  average_buy_price * remain_quantity if remain_quantity <0 else average_sell_price *remain_quantity  
+  profit = total_sell_price - total_buy_price  +  (average_buy_price * remain_quantity if remain_quantity <0 else average_sell_price *remain_quantity  )
 
   return {
     "average_buy_price": average_buy_price,

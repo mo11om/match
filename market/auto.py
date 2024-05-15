@@ -23,14 +23,14 @@ def append_dict_to_csv(data, filename):
     # Skip writing the header row if the file already exists
     writer.writerow(data)
 
- 
+def main(write_file):
 
-
-
-if __name__ == "__main__":
     reset()
+    time.sleep(0.5)
+
     make_market("test.csv")
     time.sleep(1)
+
     previous_price=None
     while True:
             try:
@@ -49,6 +49,12 @@ if __name__ == "__main__":
                 break
     # Example usage (assuming you have your transaction data in a list named 'deals')
     stats = calculate_trade_stats( get_deals("mo"))
-    append_dict_to_csv(stats, "stock_summary.csv")
+    append_dict_to_csv(stats, write_file)
 
     print(stats)
+
+
+if __name__ == "__main__":
+    filename= input("filename ")
+    for i in range(35):
+        main(filename)

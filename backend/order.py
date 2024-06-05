@@ -80,6 +80,7 @@ class OrderBook:
         self.trade_price=inf
         self.finish_deal=Queue()
         self.inOrder=Queue()
+        self.match= True
     def reset(self):
         self.buy_order_book = SortedDict()
         self.buy_Cumulative_quantity=SortedDict()
@@ -256,7 +257,11 @@ class OrderBook:
             if order.quantity == 0:
                 break
             matching_orders = self.sell_order_book[price] if order.order_type == 'buy' else self.buy_order_book[price]
-            self.pro_rata_match(matching_orders, order)
+            if self.match:
+                self.fifo_match(matching_orders, order)
+                
+            else:
+                self.pro_rata_match(matching_orders, order)
         if order.quantity>0:
             self.add_order(order=order)
     def add_order(self,order:Order):

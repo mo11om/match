@@ -91,6 +91,7 @@ if __name__ == "__main__":
     surge_threshold = 0.0001  # Percentage surge threshold to trigger a sell order
     minimum_order_amount = 10  # Minimum quantity for an order
     minimum_reward_threshold=0.00001
-    strategy = TradingStrategy(1, 100,dip_threshold,surge_threshold,minimum_reward_threshold)  # Replace with your parameters
+    spec_prob= float(input ("spec prob "))
+    strategy = TradingStrategy(spec_prob, 100,dip_threshold,surge_threshold,minimum_reward_threshold)  # Replace with your parameters
     strategy.start()
      
